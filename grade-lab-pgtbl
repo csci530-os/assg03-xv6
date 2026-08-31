@@ -11,11 +11,11 @@ def test_pgtbltest():
         'pgtbltest'
     ]), timeout=300)
 
-@test(10, "pgtbltest: ugetpid", parent=test_pgtbltest)
+@test(35, "pgtbltest: ugetpid", parent=test_pgtbltest)
 def test_ugetpid_():
     r.match('^ugetpid_test: OK$')
 
-@test(10, "pgtbltest: print_kpgtbl", parent=test_pgtbltest)
+@test(20, "pgtbltest: print_kpgtbl", parent=test_pgtbltest)
 def test_print_kpgtbl_():
     r.match(
         r'^page table 0x',
@@ -31,12 +31,12 @@ def test_print_kpgtbl_():
         r'^ \.\. \.\. \.\.(0xfffffffffffff000|0x0000003ffffff000)',
     )
 
-@test(15, "pgtbltest: superpg", parent=test_pgtbltest)
+@test(30, "pgtbltest: superpg", parent=test_pgtbltest)
 def test_superpg_():
     r.match('^superpg_fork: OK$')
     r.match('^superpg_free: OK$')
 
-@test(5, "answers-pgtbl.txt")
+@test(20, "answers-pgtbl.txt")
 def test_answers():
     # just a simple sanity check, will be graded manually
     check_answers("answers-pgtbl.txt")
@@ -47,7 +47,7 @@ def test_usertests():
         'usertests -q'
     ]), timeout=300)
 
-@test(1, "time")
+@test(5, "time")
 def test_time():
     check_time()
 
