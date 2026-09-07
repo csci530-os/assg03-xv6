@@ -83,21 +83,6 @@ When you run `pgtbltest`, the `print_kpgtbl()` test calls your
 `vmprint()` which should print the following:
 
 ```
-print_kpgtbl starting
-page table 0x0000000086742000
- ..0x0000000000000000: pte 0x00000000219cf801 pa 0x000000008673e000
- .. ..0x0000000000000000: pte 0x00000000219cf401 pa 0x000000008673d000
- .. .. ..0x0000000000000000: pte 0x00000000219cfc5b pa 0x000000008673f000 RXU
- .. .. ..0x0000000000001000: pte 0x00000000219cf05b pa 0x000000008673c000 RXU
- .. .. ..0x0000000000002000: pte 0x00000000219cec17 pa 0x000000008673b000 RWU
- .. .. ..0x0000000000003000: pte 0x00000000219ce807 pa 0x000000008673a000 RW
- .. .. ..0x0000000000004000: pte 0x00000000219ce4d7 pa 0x0000000086739000 RWU
- ..0x0000003fc0000000: pte 0x00000000219d0401 pa 0x0000000086741000
- .. ..0x0000003fffe00000: pte 0x00000000219d0001 pa 0x0000000086740000
- .. .. ..0x0000003fffffd000: pte 0x00000000219dc813 pa 0x0000000086772000 RU
- .. .. ..0x0000003fffffe000: pte 0x00000000219d80c7 pa 0x0000000086760000 RW
- .. .. ..0x0000003ffffff000: pte 0x000000002000184b pa 0x0000000080006000 RX
-print_kpgtbl: OK
 
 ```
 
@@ -201,18 +186,29 @@ You will receive full credit for this part of the lab if the
 Some **hints**:
 
 - Read `superpg_fork()` and `superpg_free()` in `user/pgtbltest.c`
+  For example, `superpg_fork()` first uses `sbrk(SZ)` to attempt to allocate
+  `8 * SUPERPGSIZE` amount of memory.  Immeidatalty after, the `supercheck()`
+  function is called.  This is the function that is performing tests to
+  see that you allocated super pages.  For example in the second
+  `for` loop, it is walking some virtual addresses on the last
+  (super) page that was allocated. If super pages are used, it is expected
+  that all of the page table entries will be the same because there is only
+  1 super page for the whole range.  But if super pages are not successfully
+  used, then different page table entries will be found, and this causes
+  the check to report an error.
 - (easy) Your kernel will need to be able to allocate and free two-megabyte
   regions. Modify `kalloc.c` to set aside a few two-megabyte areas of
   physical memory, and create `salloc()` and `sfree()` functions 
   (which stand for super page allocator and super page free respectively).
   You'll only need a handful of two-megabyte chunks of memory.
-  I will give some points here if you don't complete all of task 04.  
+  I will give some partial credit on task 04 if you have your 2M allocation
+  working, but don't get all of the superpages implemented and working completely.  
   Modifying this code is helpful in understanding how the kernel keeps track
   of unallocated memory space using linked lists, and allows for dynamic
   allocation of memory.
   - As a suggestion, you might find it useful to define the following in 
     `memlayout.h` for use in setting up two separate linked lists of free
-    pages to be managed in the `kalloc` routines:
+    pages to be managed in the `kalloc.c` routines:
 ```c
 #define KERNBASE     0x80000000L
 #define SUPERPGSTART (KERNBASE + 104 * 1024 * 1024)
@@ -239,6 +235,10 @@ Some **hints**:
 #define SUPERPGROUNDUP(sz)   (((sz) + SUPERPGSIZE - 1) & ~(SUPERPGSIZE - 1))
 #define SUPERPGROUNDDOWN(sz) (SUPERPGROUNDUP(sz) - SUPERPGSIZE)
 ```
+  - Likewise the `PTA2PA` AND `PA2PTA` macros given in `kernel/riscv.h` won't work if
+    you are translating a virtual address to physical address or the other way
+    for a superpage in the L1 of the page table tree.  The superpages use
+    21 bits for a page offset / page shift.
 - Superpages must be allocated when a process with superpages forks, and
   freed when it exits; you'll need to modify `uvmcopy()` and `uvmunmap()`.
 
