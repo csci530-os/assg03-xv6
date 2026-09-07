@@ -211,8 +211,8 @@ Some **hints**:
     pages to be managed in the `kalloc.c` routines:
 ```c
 #define KERNBASE     0x80000000L
-#define SUPERPGSTART (KERNBASE + 104 * 1024 * 1024)
-#define PHYSTOP      (SUPERPGSTART + 24 * 1024 * 1024)
+#define SUPERPGSTART (KERNBASE + 90 * 1024 * 1024)
+#define PHYSTOP      (SUPERPGSTART + 38 * 1024 * 1024)
 ```
 - A good place to start is `sys_sbrk` in `kernel/sysproc.c`, which is
   invoked by the `sbrk` system call. Follow the code path to the function
